@@ -1,15 +1,12 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  simple-websockets-chat-app
-
-  SAM Template for simple-websockets-chat-app that has the DynamoDB table and Lambda
-  functions needed to demonstrate the Websocket protocol on API Gateway.
+  climbingpartners-chat-microservice
 
 Parameters:
   TableName:
     Type: String
-    Default: 'simplechat_connections'
+    Default: 'climbingpartners_connections'
     Description: (Required) The name of the new DynamoDB to store connection identifiers for each connected clients. Minimum 3 characters
     MinLength: 3
     MaxLength: 50
@@ -17,16 +14,16 @@ Parameters:
     ConstraintDescription: 'Required. Can be characters and underscore only. No numbers or special characters allowed.'
 
 Resources:
-  SimpleChatWebSocket:
+  ClimbingPartnersChatWebSocket:
     Type: AWS::ApiGatewayV2::Api
     Properties:
-      Name: SimpleChatWebSocket
+      Name: ClimbingPartnersChatWebSocket
       ProtocolType: WEBSOCKET
       RouteSelectionExpression: "$request.body.action"
   ConnectRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
-      ApiId: !Ref SimpleChatWebSocket
+      ApiId: !Ref ClimbingPartnersChatWebSocket
       RouteKey: $connect
       AuthorizationType: NONE
       OperationName: ConnectRoute
@@ -37,7 +34,7 @@ Resources:
   ConnectInteg:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
-      ApiId: !Ref SimpleChatWebSocket
+      ApiId: !Ref ClimbingPartnersChatWebSocket
       Description: Connect Integration
       IntegrationType: AWS_PROXY
       IntegrationUri: 
@@ -46,7 +43,7 @@ Resources:
   DisconnectRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
-      ApiId: !Ref SimpleChatWebSocket
+      ApiId: !Ref ClimbingPartnersChatWebSocket
       RouteKey: $disconnect
       AuthorizationType: NONE
       OperationName: DisconnectRoute
@@ -57,7 +54,7 @@ Resources:
   DisconnectInteg:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
-      ApiId: !Ref SimpleChatWebSocket
+      ApiId: !Ref ClimbingPartnersChatWebSocket
       Description: Disconnect Integration
       IntegrationType: AWS_PROXY
       IntegrationUri: 
@@ -66,7 +63,7 @@ Resources:
   SendRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
-      ApiId: !Ref SimpleChatWebSocket
+      ApiId: !Ref ClimbingPartnersChatWebSocket
       RouteKey: sendmessage
       AuthorizationType: NONE
       OperationName: SendRoute
@@ -77,7 +74,7 @@ Resources:
   SendInteg:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
-      ApiId: !Ref SimpleChatWebSocket
+      ApiId: !Ref ClimbingPartnersChatWebSocket
       Description: Send Integration
       IntegrationType: AWS_PROXY
       IntegrationUri: 
@@ -90,14 +87,14 @@ Resources:
     - SendRoute
     - DisconnectRoute
     Properties:
-      ApiId: !Ref SimpleChatWebSocket
+      ApiId: !Ref ClimbingPartnersChatWebSocket
   Stage:
     Type: AWS::ApiGatewayV2::Stage
     Properties:
-      StageName: Prod
-      Description: Prod Stage
+      StageName: Staging
+      Description: Staging Environment
       DeploymentId: !Ref Deployment
-      ApiId: !Ref SimpleChatWebSocket
+      ApiId: !Ref ClimbingPartnersChatWebSocket
   ConnectionsTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -116,8 +113,8 @@ Resources:
   OnConnectFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: onconnect/
-      Handler: app.handler
+      CodeUri: server/
+      Handler: app.onConnect
       MemorySize: 256
       Runtime: nodejs12.x
       Environment:
@@ -129,7 +126,7 @@ Resources:
   OnConnectPermission:
     Type: AWS::Lambda::Permission
     DependsOn:
-      - SimpleChatWebSocket
+      - ClimbingPartnersChatWebSocket
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !Ref OnConnectFunction
@@ -137,8 +134,8 @@ Resources:
   OnDisconnectFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ondisconnect/
-      Handler: app.handler
+      CodeUri: server/
+      Handler: app.onDisconnect
       MemorySize: 256
       Runtime: nodejs12.x
       Environment:
@@ -150,7 +147,7 @@ Resources:
   OnDisconnectPermission:
     Type: AWS::Lambda::Permission
     DependsOn:
-      - SimpleChatWebSocket
+      - ClimbingPartnersChatWebSocket
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !Ref OnDisconnectFunction
@@ -158,8 +155,8 @@ Resources:
   SendMessageFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: sendmessage/
-      Handler: app.handler
+      CodeUri: server/
+      Handler: app.sendMessage
       MemorySize: 256
       Runtime: nodejs12.x
       Environment:
@@ -173,11 +170,11 @@ Resources:
           Action:
           - 'execute-api:ManageConnections'
           Resource:
-          - !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${SimpleChatWebSocket}/*'
+          - !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ClimbingPartnersChatWebSocket}/*'
   SendMessagePermission:
     Type: AWS::Lambda::Permission
     DependsOn:
-      - SimpleChatWebSocket
+      - ClimbingPartnersChatWebSocket
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !Ref SendMessageFunction
@@ -202,4 +199,4 @@ Outputs:
 
   WebSocketURI:
     Description: "The WSS Protocol URI to connect to"
-    Value: !Join [ '', [ 'wss://', !Ref SimpleChatWebSocket, '.execute-api.',!Ref 'AWS::Region','.amazonaws.com/',!Ref 'Stage'] ]
+    Value: !Join [ '', [ 'wss://', !Ref ClimbingPartnersChatWebSocket, '.execute-api.',!Ref 'AWS::Region','.amazonaws.com/',!Ref 'Stage'] ]
