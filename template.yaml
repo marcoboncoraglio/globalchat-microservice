@@ -4,10 +4,26 @@ Description: >
   climbingpartners-chat-microservice
 
 Parameters:
-  TableName:
+  ConnectionsTableParam:
     Type: String
     Default: 'climbingpartners_connections'
     Description: (Required) The name of the new DynamoDB to store connection identifiers for each connected clients. Minimum 3 characters
+    MinLength: 3
+    MaxLength: 50
+    AllowedPattern: ^[A-Za-z_]+$
+    ConstraintDescription: 'Required. Can be characters and underscore only. No numbers or special characters allowed.'
+  ChatRoomsTableParam:
+    Type: String
+    Default: 'climbingpartners_chatrooms'
+    Description: (Required) The name of the new DynamoDB to store chat rooms and reference to messages. Minimum 3 characters
+    MinLength: 3
+    MaxLength: 50
+    AllowedPattern: ^[A-Za-z_]+$
+    ConstraintDescription: 'Required. Can be characters and underscore only. No numbers or special characters allowed.'
+  MessagesTableParam:
+    Type: String
+    Default: 'climbingpartners_messages'
+    Description: (Required) The name of the new DynamoDB to store messages. Minimum 3 characters
     MinLength: 3
     MaxLength: 50
     AllowedPattern: ^[A-Za-z_]+$
@@ -19,7 +35,7 @@ Resources:
     Properties:
       Name: ClimbingPartnersChatWebSocket
       ProtocolType: WEBSOCKET
-      RouteSelectionExpression: "$request.body.action"
+      RouteSelectionExpression: '$request.body.action'
   ConnectRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
@@ -37,9 +53,8 @@ Resources:
       ApiId: !Ref ClimbingPartnersChatWebSocket
       Description: Connect Integration
       IntegrationType: AWS_PROXY
-      IntegrationUri: 
-        Fn::Sub:
-            arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${OnConnectFunction.Arn}/invocations
+      IntegrationUri:
+        Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${OnConnectFunction.Arn}/invocations
   DisconnectRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
@@ -57,9 +72,8 @@ Resources:
       ApiId: !Ref ClimbingPartnersChatWebSocket
       Description: Disconnect Integration
       IntegrationType: AWS_PROXY
-      IntegrationUri: 
-        Fn::Sub:
-            arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${OnDisconnectFunction.Arn}/invocations
+      IntegrationUri:
+        Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${OnDisconnectFunction.Arn}/invocations
   SendRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
@@ -77,15 +91,14 @@ Resources:
       ApiId: !Ref ClimbingPartnersChatWebSocket
       Description: Send Integration
       IntegrationType: AWS_PROXY
-      IntegrationUri: 
-        Fn::Sub:
-            arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SendMessageFunction.Arn}/invocations
+      IntegrationUri:
+        Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SendMessageFunction.Arn}/invocations
   Deployment:
     Type: AWS::ApiGatewayV2::Deployment
     DependsOn:
-    - ConnectRoute
-    - SendRoute
-    - DisconnectRoute
+      - ConnectRoute
+      - SendRoute
+      - DisconnectRoute
     Properties:
       ApiId: !Ref ClimbingPartnersChatWebSocket
   Stage:
@@ -99,17 +112,47 @@ Resources:
     Type: AWS::DynamoDB::Table
     Properties:
       AttributeDefinitions:
-      - AttributeName: "connectionId"
-        AttributeType: "S"
+      - AttributeName: 'connectionId'
+        AttributeType: 'S'
       KeySchema:
-      - AttributeName: "connectionId"
-        KeyType: "HASH"
+      - AttributeName: 'connectionId'
+        KeyType: 'HASH'
       ProvisionedThroughput:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
       SSESpecification:
         SSEEnabled: True
-      TableName: !Ref TableName
+      TableName: !Ref ConnectionsTableParam
+  ChatRoomsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+      - AttributeName: 'chatId'
+        AttributeType: 'S'
+      KeySchema:
+      - AttributeName: 'chatId'
+        KeyType: 'HASH'
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      SSESpecification:
+        SSEEnabled: True
+      TableName: !Ref ChatRoomsTableParam
+  MessagesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+      - AttributeName: 'chatId'
+        AttributeType: 'S'
+      KeySchema:
+      - AttributeName: 'chatId'
+        KeyType: 'HASH'
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      SSESpecification:
+        SSEEnabled: True
+      TableName: !Ref MessagesTableParam
   OnConnectFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -119,10 +162,16 @@ Resources:
       Runtime: nodejs12.x
       Environment:
         Variables:
-          TABLE_NAME: !Ref TableName
+          CONNECTIONS_TABLE_NAME: !Ref ConnectionsTableParam
+          CHATROOMS_TABLE_NAME: !Ref ChatRoomsTableParam
+          MESSAGES_TABLE_NAME: !Ref MessagesTableParam
       Policies:
-      - DynamoDBCrudPolicy:
-          TableName: !Ref TableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ConnectionsTableParam
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ChatRoomsTableParam
+        - DynamoDBCrudPolicy:
+            TableName: !Ref MessagesTableParam
   OnConnectPermission:
     Type: AWS::Lambda::Permission
     DependsOn:
@@ -140,10 +189,10 @@ Resources:
       Runtime: nodejs12.x
       Environment:
         Variables:
-          TABLE_NAME: !Ref TableName
+          CONNECTIONS_TABLE_NAME: !Ref ConnectionsTableParam
       Policies:
-      - DynamoDBCrudPolicy:
-          TableName: !Ref TableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ConnectionsTableParam
   OnDisconnectPermission:
     Type: AWS::Lambda::Permission
     DependsOn:
@@ -161,16 +210,22 @@ Resources:
       Runtime: nodejs12.x
       Environment:
         Variables:
-          TABLE_NAME: !Ref TableName
+          CONNECTIONS_TABLE_NAME: !Ref ConnectionsTableParam
+          CHATROOMS_TABLE_NAME: !Ref ChatRoomsTableParam
+          MESSAGES_TABLE_NAME: !Ref MessagesTableParam
       Policies:
-      - DynamoDBCrudPolicy:
-          TableName: !Ref TableName
-      - Statement:
-        - Effect: Allow
-          Action:
-          - 'execute-api:ManageConnections'
-          Resource:
-          - !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ClimbingPartnersChatWebSocket}/*'
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ConnectionsTableParam
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ChatRoomsTableParam
+        - DynamoDBCrudPolicy:
+            TableName: !Ref MessagesTableParam
+        - Statement:
+            - Effect: Allow
+              Action:
+                - 'execute-api:ManageConnections'
+              Resource:
+                - !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ClimbingPartnersChatWebSocket}/*'
   SendMessagePermission:
     Type: AWS::Lambda::Permission
     DependsOn:
@@ -182,21 +237,40 @@ Resources:
 
 Outputs:
   ConnectionsTableArn:
-    Description: "Connections table ARN"
+    Description: 'Connections table ARN'
     Value: !GetAtt ConnectionsTable.Arn
+  
+  ChatRoomsTableArn:
+    Description: 'Chat rooms table ARN'
+    Value: !GetAtt ChatRoomsTable.Arn
+
+  MessagesTableArn:
+    Description: 'Messages table ARN'
+    Value: !GetAtt MessagesTable.Arn
 
   OnConnectFunctionArn:
-    Description: "OnConnect function ARN"
+    Description: 'OnConnect function ARN'
     Value: !GetAtt OnConnectFunction.Arn
 
   OnDisconnectFunctionArn:
-    Description: "OnDisconnect function ARN"
+    Description: 'OnDisconnect function ARN'
     Value: !GetAtt OnDisconnectFunction.Arn
 
   SendMessageFunctionArn:
-    Description: "SendMessage function ARN"
+    Description: 'SendMessage function ARN'
     Value: !GetAtt SendMessageFunction.Arn
 
   WebSocketURI:
-    Description: "The WSS Protocol URI to connect to"
-    Value: !Join [ '', [ 'wss://', !Ref ClimbingPartnersChatWebSocket, '.execute-api.',!Ref 'AWS::Region','.amazonaws.com/',!Ref 'Stage'] ]
+    Description: 'The WSS Protocol URI to connect to'
+    Value:
+      !Join [
+        '',
+        [
+          'wss://',
+          !Ref ClimbingPartnersChatWebSocket,
+          '.execute-api.',
+          !Ref 'AWS::Region',
+          '.amazonaws.com/',
+          !Ref 'Stage',
+        ],
+      ]
