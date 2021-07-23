@@ -30,34 +30,17 @@ Parameters:
     ConstraintDescription: 'Required. Can be characters and underscore only. No numbers or special characters allowed.'
 
 Resources:
-  MessagesApi:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: server/
-      Handler: app.messagesApi
-      MemorySize: 256
-      Runtime: nodejs12.x
-      Events:
-        GetMessages:
-          Type: Api
-          Properties:
-            Path: /messages
-            Method: get
-      Environment:
-        Variables:
-          CHATROOMS_TABLE_NAME: !Ref ChatRoomsTableParam
-          MESSAGES_TABLE_NAME: !Ref MessagesTableParam
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref ChatRoomsTableParam
-        - DynamoDBCrudPolicy:
-            TableName: !Ref MessagesTableParam
+
+  # define api gateway v2, route according to request.body.action
+
   ClimbingPartnersChatWebSocket:
     Type: AWS::ApiGatewayV2::Api
     Properties:
       Name: ClimbingPartnersChatWebSocket
       ProtocolType: WEBSOCKET
       RouteSelectionExpression: '$request.body.action'
+
+  # for connect routekey, link to connection integration
   ConnectRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
@@ -69,6 +52,8 @@ Resources:
         - '/'
         - - 'integrations'
           - !Ref ConnectInteg
+
+  # invoke connect lambda
   ConnectInteg:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
@@ -130,6 +115,9 @@ Resources:
       Description: Staging Environment
       DeploymentId: !Ref Deployment
       ApiId: !Ref ClimbingPartnersChatWebSocket
+  
+  # tables
+
   ConnectionsTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -187,6 +175,9 @@ Resources:
       SSESpecification:
         SSEEnabled: True
       TableName: !Ref MessagesTableParam
+
+  # websocket functions
+
   OnConnectFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -268,6 +259,31 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName: !Ref SendMessageFunction
       Principal: apigateway.amazonaws.com
+
+  # rest api functions
+
+  MessagesApi:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: server/
+      Handler: app.messagesApi
+      MemorySize: 256
+      Runtime: nodejs12.x
+      Events:
+        GetMessages:
+          Type: Api
+          Properties:
+            Path: /messages
+            Method: get
+      Environment:
+        Variables:
+          CHATROOMS_TABLE_NAME: !Ref ChatRoomsTableParam
+          MESSAGES_TABLE_NAME: !Ref MessagesTableParam
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ChatRoomsTableParam
+        - DynamoDBCrudPolicy:
+            TableName: !Ref MessagesTableParam
 
 Outputs:
   MessagesApiArn:
