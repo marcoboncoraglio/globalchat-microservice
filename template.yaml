@@ -114,12 +114,24 @@ Resources:
       AttributeDefinitions:
       - AttributeName: 'connectionId'
         AttributeType: 'S'
+      - AttributeName: 'userId'
+        AttributeType: 'S'
       KeySchema:
       - AttributeName: 'connectionId'
         KeyType: 'HASH'
       ProvisionedThroughput:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
+      GlobalSecondaryIndexes:
+        - IndexName: 'userId'
+          KeySchema:
+          - AttributeName: 'userId'
+            KeyType: 'HASH'
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+          Projection: 
+            ProjectionType: 'ALL'
       SSESpecification:
         SSEEnabled: True
       TableName: !Ref ConnectionsTableParam
