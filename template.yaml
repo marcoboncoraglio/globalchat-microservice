@@ -30,6 +30,28 @@ Parameters:
     ConstraintDescription: 'Required. Can be characters and underscore only. No numbers or special characters allowed.'
 
 Resources:
+  MessagesApi:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: server/
+      Handler: app.messagesApi
+      MemorySize: 256
+      Runtime: nodejs12.x
+      Events:
+        GetMessages:
+          Type: Api
+          Properties:
+            Path: /messages
+            Method: get
+      Environment:
+        Variables:
+          CHATROOMS_TABLE_NAME: !Ref ChatRoomsTableParam
+          MESSAGES_TABLE_NAME: !Ref MessagesTableParam
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ChatRoomsTableParam
+        - DynamoDBCrudPolicy:
+            TableName: !Ref MessagesTableParam
   ClimbingPartnersChatWebSocket:
     Type: AWS::ApiGatewayV2::Api
     Properties:
@@ -112,25 +134,25 @@ Resources:
     Type: AWS::DynamoDB::Table
     Properties:
       AttributeDefinitions:
-      - AttributeName: 'connectionId'
-        AttributeType: 'S'
-      - AttributeName: 'userId'
-        AttributeType: 'S'
+        - AttributeName: 'connectionId'
+          AttributeType: 'S'
+        - AttributeName: 'userId'
+          AttributeType: 'S'
       KeySchema:
-      - AttributeName: 'connectionId'
-        KeyType: 'HASH'
+        - AttributeName: 'connectionId'
+          KeyType: 'HASH'
       ProvisionedThroughput:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
       GlobalSecondaryIndexes:
         - IndexName: 'userId'
           KeySchema:
-          - AttributeName: 'userId'
-            KeyType: 'HASH'
+            - AttributeName: 'userId'
+              KeyType: 'HASH'
           ProvisionedThroughput:
             ReadCapacityUnits: 5
             WriteCapacityUnits: 5
-          Projection: 
+          Projection:
             ProjectionType: 'ALL'
       SSESpecification:
         SSEEnabled: True
@@ -139,11 +161,11 @@ Resources:
     Type: AWS::DynamoDB::Table
     Properties:
       AttributeDefinitions:
-      - AttributeName: 'chatId'
-        AttributeType: 'S'
+        - AttributeName: 'chatId'
+          AttributeType: 'S'
       KeySchema:
-      - AttributeName: 'chatId'
-        KeyType: 'HASH'
+        - AttributeName: 'chatId'
+          KeyType: 'HASH'
       ProvisionedThroughput:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
@@ -154,11 +176,11 @@ Resources:
     Type: AWS::DynamoDB::Table
     Properties:
       AttributeDefinitions:
-      - AttributeName: 'chatId'
-        AttributeType: 'S'
+        - AttributeName: 'chatId'
+          AttributeType: 'S'
       KeySchema:
-      - AttributeName: 'chatId'
-        KeyType: 'HASH'
+        - AttributeName: 'chatId'
+          KeyType: 'HASH'
       ProvisionedThroughput:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
@@ -248,10 +270,24 @@ Resources:
       Principal: apigateway.amazonaws.com
 
 Outputs:
+  MessagesApiArn:
+    Value:
+      !Join [
+        '',
+        [
+          'https://',
+          !Ref MessagesApi,
+          '.execute-api.',
+          !Ref 'AWS::Region',
+          '.amazonaws.com/',
+          !Ref 'Stage',
+        ],
+      ]
+
   ConnectionsTableArn:
     Description: 'Connections table ARN'
     Value: !GetAtt ConnectionsTable.Arn
-  
+
   ChatRoomsTableArn:
     Description: 'Chat rooms table ARN'
     Value: !GetAtt ChatRoomsTable.Arn
