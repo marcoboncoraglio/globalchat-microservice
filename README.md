@@ -7,15 +7,16 @@ aws cloudformation describe-stacks \
     --stack-name simple-websocket-chat-app --query 'Stacks[].Outputs'
 ```
 
-## Testing the chat API
+## TODO
  
 Message date should be sort key
 
-Look into denormalizing tables maybe?
+Look into denormalizing tables
+
+confirm JWT at each message, and extract userId from token? Or is one authentication at connection enough?
 
 ``` bash
 $ wscat -c wss://e3v3oxocaj.execute-api.eu-central-1.amazonaws.com/staging
-{"action":"sendmessage", "data":"hello world"}
 
 Should create a new chat room with 2 participants
 {
@@ -49,23 +50,10 @@ token1: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYwZjg4MmZmNDdlNDA4ZDk5OWU
 
 id2: 60f970e6d61e5a318f95b326
 token2: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYwZjk3MGU2ZDYxZTVhMzE4Zjk1YjMyNiIsImlhdCI6MTYyNjk3MTk5NCwiZXhwIjoxNjI3MjMxMTk0fQ.xfuwwRuxQzxKIYbX7BMDAdOHX05oicz3l5HTRX7xwdU
-
-message.chatId is optional.
-
-newChatRoom is optional.
 ```
-
-## TODO
-
-Implement save chat
-
-
 
 ## Before deploy
 
-
-
 Check regulations for saving chat
 
-Add jwt authentication with the same secret as the climbingpartners-backend so we can verify the user
 Add cors to check that requests are coming from the frontend
