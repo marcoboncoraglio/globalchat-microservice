@@ -18,7 +18,7 @@ confirm JWT at each message, and extract userId from token? Or is one authentica
 ``` bash
 $ wscat -c wss://e3v3oxocaj.execute-api.eu-central-1.amazonaws.com/staging
 
-Should create a new chat room with 2 participants
+creates a new chat room with 2 participants
 {
    "action":"sendmessage",
    "message":{
@@ -34,7 +34,7 @@ Should create a new chat room with 2 participants
    }
 }
 
-Should add message to existing chat
+Adds message to existing chat
 {
    "action":"sendmessage",
    "message":{
@@ -44,12 +44,7 @@ Should add message to existing chat
    }
 }
 
-// expiration date 3d
-id1: 60f882ff47e408d999e2ae1c
-token1: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYwZjg4MmZmNDdlNDA4ZDk5OWUyYWUxYyIsImlhdCI6MTYyNjk3MTkzNiwiZXhwIjoxNjI3MjMxMTM2fQ.ZFRrQFRWxUStz8NR_slrFzq3QhyCSI5hWKY7Zdm9BzY
-
-id2: 60f970e6d61e5a318f95b326
-token2: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYwZjk3MGU2ZDYxZTVhMzE4Zjk1YjMyNiIsImlhdCI6MTYyNjk3MTk5NCwiZXhwIjoxNjI3MjMxMTk0fQ.xfuwwRuxQzxKIYbX7BMDAdOHX05oicz3l5HTRX7xwdU
+always returns message with chatId to the client
 ```
 
 ## Before deploy
