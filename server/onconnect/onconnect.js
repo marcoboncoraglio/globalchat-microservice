@@ -6,7 +6,7 @@ const ddb = new AWS.DynamoDB.DocumentClient({
   region: process.env.AWS_REGION,
 });
 
-// return last 50 messages for each chatroom where the user is a participant
+// return last 50 messages for each chatroom where the user is a participant (load all initial data)
 module.exports = async (event) => {
   let userId;
   try {
