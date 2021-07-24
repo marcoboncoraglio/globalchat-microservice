@@ -6,18 +6,16 @@ const ddb = new AWS.DynamoDB.DocumentClient({
   region: process.env.AWS_REGION,
 });
 
-// return last 50 messages for each chatroom where the user is a participant (load all initial data)
 module.exports = async (event) => {
   let userId;
   try {
     userId = await authenticateToken(event.queryStringParameters.token);
   } catch (e) {
     return {
-      statusCode: 500,
-      body: 'Failed to connect: ' + JSON.stringify(e),
+      statusCode: 403,
+      body: 'Invalid token: ' + JSON.stringify(e),
     };
   }
-  console.log('userId: ', userId);
 
   const putParams = {
     TableName: process.env.CONNECTIONS_TABLE_NAME,
