@@ -11,7 +11,7 @@ aws cloudformation describe-stacks \
  
 Message date should be sort key
 
-Look into denormalizing tables
+Look into denormalizing tables: Merge chatrooms and messages?
 
 confirm JWT at each message, and extract userId from token? Or is one authentication at connection enough?
 
