@@ -6,15 +6,7 @@ const ddb = new AWS.DynamoDB.DocumentClient({
 });
 
 module.exports = async (event) => {
-  let chatUrl;
-  try {
-    chatUrl = event.queryStringParameters.chatUrl;
-  } catch (e) {
-    return {
-      statusCode: 403,
-      body: 'Invalid token: ' + JSON.stringify(e),
-    };
-  }
+  let chatUrl = event.queryStringParameters.chatUrl;
 
   const putParams = {
     TableName: process.env.CONNECTIONS_TABLE_NAME,
