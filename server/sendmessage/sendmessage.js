@@ -9,15 +9,15 @@ const ddb = new DynamoDB.DocumentClient({
 const { CONNECTIONS_TABLE_NAME } = process.env;
 
 module.exports = async (event) => {
-  const message = JSON.parse(event.body.message);
+  const message = JSON.parse(event.body).message;
 
   const connectionsParams = {
     TableName: CONNECTIONS_TABLE_NAME,
-    FilterExpression: "#chatUrl = :chatUrl",
+    FilterExpression: '#chatUrl = :chatUrl',
     ExpressionAttributeNames: {
-        "#chatUrl": "chatUrl",
+      '#chatUrl': 'chatUrl',
     },
-    ExpressionAttributeValues: { ":chatUrl": message.chatUrl }
+    ExpressionAttributeValues: { ':chatUrl': message.chatUrl },
   };
 
   // TODO: make query instead of scan

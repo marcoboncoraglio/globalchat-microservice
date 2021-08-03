@@ -1,7 +1,7 @@
 const onConnect = require('./onconnect/onconnect');
 const onDisconnect = require('./ondisconnect/ondisconnect');
 const onSendMessage = require('./sendmessage/sendmessage');
-const changeRoom = require('./changeRoom/changeRoom');
+const changeRoom = require('./changeroom/changeroom');
 // const messagesApi = require('./messagesapi/messagesapi');
 
 

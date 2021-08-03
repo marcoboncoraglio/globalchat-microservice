@@ -10,7 +10,7 @@ aws cloudformation describe-stacks \
 ## TODO
 
 ``` bash
-$ wscat -c wss://e3v3oxocaj.execute-api.eu-central-1.amazonaws.com/staging
+$ wscat -c wss://nsy885h83f.execute-api.eu-central-1.amazonaws.com/Staging?chatUrl=google.com
 
 Connect to server
 wss://e3v3oxocaj.execute-api.eu-central-1.amazonaws.com/staging?chatUrl=your-url

@@ -26,12 +26,13 @@ module.exports = async (event) => {
   }
 
   const connectionsParams = {
-    TableName: CONNECTIONS_TABLE_NAME,
-    FilterExpression: "#chatUrl = :chatUrl",
+    TableName: process.env.CONNECTIONS_TABLE_NAME,
+    FilterExpression: '#chatUrl = :chatUrl',
     ExpressionAttributeNames: {
-        "#chatUrl": "chatUrl",
+      '#chatUrl': 'chatUrl',
     },
-    ExpressionAttributeValues: { ":chatUrl": chatUrl }
+    ExpressionAttributeValues: { ':chatUrl': chatUrl },
+    // add projection to connectionId
   };
 
   // TODO: make query instead of scan
@@ -43,6 +44,11 @@ module.exports = async (event) => {
     return { statusCode: 500, body: e.stack };
   }
 
+  const returnMsg = {
+    body: 'Connected',
+    roomCount: connectionIds.Items.length,
+  };
+
   //return number of connections from query
-  return { statusCode: 200, body: 'Connected.' };
+  return { statusCode: 200, body: JSON.stringify(returnMsg) };
 };

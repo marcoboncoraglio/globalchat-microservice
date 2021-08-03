@@ -262,7 +262,7 @@ Resources:
       FunctionName: !Ref ChangeRoomFunction
       Principal: apigateway.amazonaws.com
 
-
+Outputs:
   ConnectionsTableArn:
     Description: 'Connections table ARN'
     Value: !GetAtt ConnectionsTable.Arn
