@@ -1,6 +1,5 @@
 const DynamoDB = require('aws-sdk').DynamoDB;
 const ApiGatewayManagementApi = require('aws-sdk').ApiGatewayManagementApi;
-const uuidv4 = require('uuid/v4');
 
 const ddb = new DynamoDB.DocumentClient({
   apiVersion: '2012-08-10',
