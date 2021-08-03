@@ -1,9 +1,15 @@
 const AWS = require('aws-sdk');
+const authenticateToken = require('../utils/jwt');
 
 const ddb = new AWS.DynamoDB.DocumentClient({
   apiVersion: '2012-08-10',
   region: process.env.AWS_REGION,
 });
+
+const {
+  CHATROOMS_TABLE_NAME,
+  MESSAGES_TABLE_NAME,
+} = process.env;
 
 module.exports = async (event) => {
   let userId;
@@ -17,7 +23,7 @@ module.exports = async (event) => {
   }
 
   let chatRoomsParams = {
-    TableName: CONNECTIONS_TABLE_NAME,
+    TableName: CHATROOMS_TABLE_NAME,
     FilterExpression: 'contains(#participants, :userId)',
     ExpressionAttributeNames: {
       '#participants': 'participants',
@@ -39,8 +45,10 @@ module.exports = async (event) => {
   }
 
   // probably still need to parse the chatroom object
-  let messagesParamObject = new Map();
-  chatRooms.forEach((room) => messagesParamObject.set('chatId', room.chatId));
+  let messagesParamObject = {};
+  chatRooms.Items.forEach((room, index) => messagesParamObject[index] = 'chatId' + room.chatId);
+
+  console.log('obj: ', messagesParamObject);
 
   // get all messages for the loaded chatrooms
   let messagesParams = {

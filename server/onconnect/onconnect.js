@@ -1,15 +1,15 @@
 const AWS = require('aws-sdk');
-const authenticateToken = require('../utils/jwt');
 
 const ddb = new AWS.DynamoDB.DocumentClient({
   apiVersion: '2012-08-10',
   region: process.env.AWS_REGION,
 });
 
+// return amount of people currently connected to the chat
 module.exports = async (event) => {
-  let userId;
+  let chatUrl;
   try {
-    userId = await authenticateToken(event.queryStringParameters.token);
+    chatUrl = event.queryStringParameters.chatUrl;
   } catch (e) {
     return {
       statusCode: 403,
@@ -21,7 +21,7 @@ module.exports = async (event) => {
     TableName: process.env.CONNECTIONS_TABLE_NAME,
     Item: {
       connectionId: event.requestContext.connectionId, // socket id
-      userId,
+      chatUrl,
     },
   };
 
