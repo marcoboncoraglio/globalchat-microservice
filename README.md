@@ -12,9 +12,6 @@ aws cloudformation describe-stacks \
 ``` bash
 $ wscat -c wss://nsy885h83f.execute-api.eu-central-1.amazonaws.com/Staging?chatUrl=google.com
 
-Connect to server
-wss://e3v3oxocaj.execute-api.eu-central-1.amazonaws.com/staging?chatUrl=your-url
-
 Adds message to existing chat
 {
    "action":"sendmessage",
@@ -24,9 +21,9 @@ Adds message to existing chat
       "text":"hello again"
    }
 }
-
 always returns entire message object to people in the same chat room
 
+(might not work yet)
 Change room
 {
    "action": "changeroom",
