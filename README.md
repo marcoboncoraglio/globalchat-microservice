@@ -1,15 +1,8 @@
-## AWS CLI commands
-
-```
-sam deploy --guided
-
-aws cloudformation describe-stacks \
-    --stack-name simple-websocket-chat-app --query 'Stacks[].Outputs'
-```
-
-## USAGE
+## Usage
 
 ``` bash
+
+connect:
 $ wscat -c wss://nsy885h83f.execute-api.eu-central-1.amazonaws.com/Staging?chatUrl=google.com
 
 Adds message to existing chat
@@ -33,9 +26,3 @@ Change room
 either 200 or 500
 
 ```
-
-## Before deploy
-
-Check regulations for saving chat
-
-Add cors to check that requests are coming from the frontend
