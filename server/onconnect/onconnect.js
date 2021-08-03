@@ -5,7 +5,6 @@ const ddb = new AWS.DynamoDB.DocumentClient({
   region: process.env.AWS_REGION,
 });
 
-// return amount of people currently connected to the chat
 module.exports = async (event) => {
   let chatUrl;
   try {
@@ -34,5 +33,24 @@ module.exports = async (event) => {
     };
   }
 
+  const connectionsParams = {
+    TableName: CONNECTIONS_TABLE_NAME,
+    FilterExpression: "#chatUrl = :chatUrl",
+    ExpressionAttributeNames: {
+        "#chatUrl": "chatUrl",
+    },
+    ExpressionAttributeValues: { ":chatUrl": chatUrl }
+  };
+
+  // TODO: make query instead of scan
+  let connectionIds;
+  try {
+    connectionIds = await ddb.scan(connectionsParams).promise();
+  } catch (e) {
+    console.log('error: ', e);
+    return { statusCode: 500, body: e.stack };
+  }
+
+  //return number of connections from query
   return { statusCode: 200, body: 'Connected.' };
 };
