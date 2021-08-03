@@ -92,6 +92,25 @@ Resources:
       IntegrationType: AWS_PROXY
       IntegrationUri:
         Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SendMessageFunction.Arn}/invocations
+  ChangeRoomRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref GlobalChatWebSocket
+      RouteKey: changeroom
+      AuthorizationType: NONE
+      OperationName: ChangeRoomRoute
+      Target: !Join
+        - '/'
+        - - 'integrations'
+          - !Ref ChangeRoomInteg
+  ChangeRoomInteg:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref GlobalChatWebSocket
+      Description: Change Room integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ChangeRoomFunction.Arn}/invocations
   Deployment:
     Type: AWS::ApiGatewayV2::Deployment
     DependsOn:
@@ -218,6 +237,31 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName: !Ref SendMessageFunction
       Principal: apigateway.amazonaws.com
+  ChangeRoomFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: server/
+      Handler: app.changeRoom
+      MemorySize: 256
+      Runtime: nodejs12.x
+      Environment:
+        Variables:
+          CONNECTIONS_TABLE_NAME: !Ref ConnectionsTableParam
+          # MESSAGES_TABLE_NAME: !Ref MessagesTableParam
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ConnectionsTableParam
+        # - DynamoDBCrudPolicy:
+        #     TableName: !Ref MessagesTableParam
+  OnConnectPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - GlobalChatWebSocket
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref ChangeRoomFunction
+      Principal: apigateway.amazonaws.com
+
 
   ConnectionsTableArn:
     Description: 'Connections table ARN'
