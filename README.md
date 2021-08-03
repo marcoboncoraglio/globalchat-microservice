@@ -7,7 +7,7 @@ aws cloudformation describe-stacks \
     --stack-name simple-websocket-chat-app --query 'Stacks[].Outputs'
 ```
 
-## TODO
+## USAGE
 
 ``` bash
 $ wscat -c wss://nsy885h83f.execute-api.eu-central-1.amazonaws.com/Staging?chatUrl=google.com
