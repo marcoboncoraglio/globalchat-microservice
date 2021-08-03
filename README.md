@@ -8,8 +8,6 @@ aws cloudformation describe-stacks \
 ```
 
 ## TODO
- 
-
 
 ``` bash
 $ wscat -c wss://e3v3oxocaj.execute-api.eu-central-1.amazonaws.com/staging
@@ -29,10 +27,10 @@ Adds message to existing chat
 
 always returns entire message object to people in the same chat room
 
-Eventually
+Change room
 {
    "action": "changeroom",
-   "url": "google.com"
+   "chatUrl": "google.com"
 }
 
 either 200 or 500
