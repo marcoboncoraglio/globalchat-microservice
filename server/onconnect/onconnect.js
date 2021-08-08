@@ -6,13 +6,12 @@ const ddb = new AWS.DynamoDB.DocumentClient({
 });
 
 module.exports = async (event) => {
-  let chatUrl = event.queryStringParameters.chatUrl;
+  const connectionId = event.requestContext.connectionId; // socket id
 
   const putParams = {
     TableName: process.env.CONNECTIONS_TABLE_NAME,
     Item: {
-      connectionId: event.requestContext.connectionId, // socket id
-      chatUrl,
+      connectionId,
     },
   };
 
@@ -25,28 +24,9 @@ module.exports = async (event) => {
     };
   }
 
-  const connectionsParams = {
-    TableName: process.env.CONNECTIONS_TABLE_NAME,
-    FilterExpression: '#chatUrl = :chatUrl',
-    ExpressionAttributeNames: {
-      '#chatUrl': 'chatUrl',
-    },
-    ExpressionAttributeValues: { ':chatUrl': chatUrl },
-    // add projection to connectionId
-  };
-
-  // TODO: make query instead of scan
-  let connectionIds;
-  try {
-    connectionIds = await ddb.scan(connectionsParams).promise();
-  } catch (e) {
-    console.log('error: ', e);
-    return { statusCode: 500, body: e.stack };
-  }
-
   const returnMsg = {
     body: 'Connected',
-    roomCount: connectionIds.Items.length,
+    connectionId,
   };
 
   //return number of connections from query

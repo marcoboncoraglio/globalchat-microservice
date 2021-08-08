@@ -10,7 +10,7 @@ aws cloudformation describe-stacks \
 ## USAGE
 
 ``` bash
-$ wscat -c wss://nsy885h83f.execute-api.eu-central-1.amazonaws.com/Staging?chatUrl=google.com
+$ wscat -c wss://nsy885h83f.execute-api.eu-central-1.amazonaws.com/
 
 Adds message to existing chat
 {
@@ -35,7 +35,5 @@ either 200 or 500
 ```
 
 ## Before deploy
-
-Check regulations for saving chat
 
 Add cors to check that requests are coming from the frontend
