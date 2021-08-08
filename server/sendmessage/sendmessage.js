@@ -9,7 +9,14 @@ const ddb = new DynamoDB.DocumentClient({
 const { CONNECTIONS_TABLE_NAME } = process.env;
 
 module.exports = async (event) => {
-  const message = JSON.parse(event.body).message;
+  let body = JSON.parse(event.body);
+  const message = body.message;
+  
+  // attach connectionId to uniquely identify users
+  body.message = {
+    ...message,
+    connectionId: event.requestContext.connectionId,
+  };
 
   const connectionsParams = {
     TableName: CONNECTIONS_TABLE_NAME,
@@ -40,7 +47,7 @@ module.exports = async (event) => {
       await apigwManagementApi
         .postToConnection({
           ConnectionId: connectionId,
-          Data: JSON.stringify(message),
+          Data: JSON.stringify(body),
         })
         .promise();
     } catch (e) {

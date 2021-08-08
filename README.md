@@ -18,10 +18,11 @@ Adds message to existing chat
    "message":{
       "chatUrl":"youtube.com",
       "author":"Jeff",
-      "text":"hello again"
+      "text":"hello again",
+      "imgUrl":"imgUrl"
    }
 }
-always returns entire message object to people in the same chat room
+always returns entire message object plus connectionId
 
 (might not work yet)
 Change room

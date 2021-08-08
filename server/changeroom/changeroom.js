@@ -6,7 +6,8 @@ const ddb = new AWS.DynamoDB.DocumentClient({
 });
 
 module.exports = async (event) => {
-  const message = JSON.parse(JSON.stringify(event.body)).chatUrl;
+  const body = JSON.parse(event.body)
+  const { chatUrl } = body;
 
   const putParams = {
     TableName: process.env.CONNECTIONS_TABLE_NAME,
@@ -45,7 +46,7 @@ module.exports = async (event) => {
   }
 
   const returnMsg = {
-    body: 'Connected',
+    body: 'Connected to ' + chatUrl,
     roomCount: connectionIds.Items.length,
   };
 
