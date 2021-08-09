@@ -253,6 +253,12 @@ Resources:
             TableName: !Ref ConnectionsTableParam
         # - DynamoDBCrudPolicy:
         #     TableName: !Ref MessagesTableParam
+        - Statement:
+            - Effect: Allow
+              Action:
+                - 'execute-api:ManageConnections'
+              Resource:
+                - !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${GlobalChatWebSocket}/*'
   ChangeRoomPermission:
     Type: AWS::Lambda::Permission
     DependsOn:
