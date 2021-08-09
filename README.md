@@ -15,17 +15,26 @@ Adds message to existing chat
    }
 }
 ```
-always returns entire body object plus connectionId attached to message
+returns entire body object plus connectionId and chatUrl
 
-
+Get room count
 ``` bash
+{
+   "action":"getroomcount",
+   "chatUrl": "google.com"
+}
+```
+returns number of connected users in chatroom
+
+
 Change room
+``` bash
 {
    "action": "changeroom",
    "chatUrl": "google.com"
 }
 ```
-changeroom should return roomcount and connectionId (couldn't send back connectionId in connect for some reason)
+returns connection acknowlegdement
 
 ## Before deploy
 Add cors to check that requests are coming from the frontend
