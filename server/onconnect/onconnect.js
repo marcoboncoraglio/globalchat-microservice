@@ -23,12 +23,6 @@ module.exports = async (event) => {
       body: 'Failed to connect: ' + JSON.stringify(err),
     };
   }
-
-  const returnMsg = {
-    body: 'Connected',
-    connectionId,
-  };
-
   //return number of connections from query
-  return { statusCode: 200, body: JSON.stringify(returnMsg) };
+  return { statusCode: 200, body: 'Connected' };
 };
