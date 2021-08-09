@@ -29,25 +29,6 @@ module.exports = async (event) => {
     };
   }
 
-  const connectionsParams = {
-    TableName: process.env.CONNECTIONS_TABLE_NAME,
-    FilterExpression: '#chatUrl = :chatUrl',
-    ExpressionAttributeNames: {
-      '#chatUrl': 'chatUrl',
-    },
-    ExpressionAttributeValues: { ':chatUrl': chatUrl },
-    // add projection to connectionId
-  };
-
-  // TODO: make query instead of scan
-  let connectionIds;
-  try {
-    connectionIds = await ddb.scan(connectionsParams).promise();
-  } catch (e) {
-    console.log('error: ', e);
-    return { statusCode: 500, body: e.stack };
-  }
-
   const apigwManagementApi = new ApiGatewayManagementApi({
     apiVersion: '2018-11-29',
     endpoint:
@@ -56,7 +37,6 @@ module.exports = async (event) => {
 
   const returnMsg = {
     message: 'Connected to ' + chatUrl,
-    roomCount: connectionIds.Items.length,
     connectionId: connectionId,
   };
 
