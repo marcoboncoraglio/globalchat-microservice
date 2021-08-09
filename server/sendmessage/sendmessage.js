@@ -9,13 +9,29 @@ const ddb = new DynamoDB.DocumentClient({
 const { CONNECTIONS_TABLE_NAME } = process.env;
 
 module.exports = async (event) => {
+  const connectionId = event.requestContext.connectionId;
   let body = JSON.parse(event.body);
-  const message = body.message;
-  
-  // attach connectionId to uniquely identify users
+
+  const getUser = {
+    TableName: CONNECTIONS_TABLE_NAME,
+    Key: {
+      connectionId: connectionId,
+    },
+  };
+
+  let user;
+  try{
+    user = await ddb.get(getUser).promise();
+  }
+  catch(e){
+    console.log('error: ', e);
+    return { statusCode: 500, body: e.stack };
+  }
+
   body.message = {
-    ...message,
+    ...body.message,
     connectionId: event.requestContext.connectionId,
+    chatUrl: user.Item.chatUrl
   };
 
   const connectionsParams = {
@@ -24,7 +40,7 @@ module.exports = async (event) => {
     ExpressionAttributeNames: {
       '#chatUrl': 'chatUrl',
     },
-    ExpressionAttributeValues: { ':chatUrl': message.chatUrl },
+    ExpressionAttributeValues: { ':chatUrl': user.Item.chatUrl },
   };
 
   // TODO: make query instead of scan
