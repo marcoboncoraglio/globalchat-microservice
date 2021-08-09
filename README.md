@@ -4,14 +4,11 @@
 $ wscat -c wss://nsy885h83f.execute-api.eu-central-1.amazonaws.com/Staging
 ```
 
-connect should return connectionId (not sure if I have to explicity pass it into the socket or if it can be retured from function)
-
 Adds message to existing chat
 ``` bash
 {
    "action":"sendmessage",
    "message":{
-      "chatUrl":"youtube.com",
       "author":"Jeff",
       "text":"hello again",
       "imgUrl":"imgUrl"
@@ -28,7 +25,7 @@ Change room
    "chatUrl": "google.com"
 }
 ```
-changeroom should return roomcount (not sure if I have to explicity pass it into the socket or if it can be retured from function)
+changeroom should return roomcount and connectionId (couldn't send back connectionId in connect for some reason)
 
 ## Before deploy
 Add cors to check that requests are coming from the frontend
