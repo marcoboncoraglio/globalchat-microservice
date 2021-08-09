@@ -24,7 +24,6 @@ Parameters:
 Resources:
 
   # define api gateway v2, route according to request.body.action
-
   GlobalChatWebSocket:
     Type: AWS::ApiGatewayV2::Api
     Properties:
@@ -111,6 +110,25 @@ Resources:
       IntegrationType: AWS_PROXY
       IntegrationUri:
         Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ChangeRoomFunction.Arn}/invocations
+  GetRoomCountRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref GlobalChatWebSocket
+      RouteKey: getroomcount
+      AuthorizationType: NONE
+      OperationName: GetRoomCountRoute
+      Target: !Join
+        - '/'
+        - - 'integrations'
+          - !Ref GetRoomCountInteg
+  GetRoomCountInteg:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref GlobalChatWebSocket
+      Description: Get room count integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetRoomCountFunction.Arn}/invocations
   Deployment:
     Type: AWS::ApiGatewayV2::Deployment
     DependsOn:
@@ -267,6 +285,36 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName: !Ref ChangeRoomFunction
       Principal: apigateway.amazonaws.com
+  GetRoomCountFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: server/
+      Handler: app.getRoomCount
+      MemorySize: 256
+      Runtime: nodejs12.x
+      Environment:
+        Variables:
+          CONNECTIONS_TABLE_NAME: !Ref ConnectionsTableParam
+          # MESSAGES_TABLE_NAME: !Ref MessagesTableParam
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ConnectionsTableParam
+        # - DynamoDBCrudPolicy:
+        #     TableName: !Ref MessagesTableParam
+        - Statement:
+            - Effect: Allow
+              Action:
+                - 'execute-api:ManageConnections'
+              Resource:
+                - !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${GlobalChatWebSocket}/*'
+  GetRoomCountPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - GlobalChatWebSocket
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref GetRoomCountFunction
+      Principal: apigateway.amazonaws.com
 
 Outputs:
   ConnectionsTableArn:
@@ -288,6 +336,10 @@ Outputs:
   ChangeRoomFunctionArn:
     Description: 'ChangeRoom function ARN'
     Value: !GetAtt ChangeRoomFunction.Arn
+
+  GetRoomCountFunctionArn:
+    Description: 'GetRoomCount function ARN'
+    Value: !GetAtt GetRoomCountFunction.Arn
 
   WebSocketURI:
     Description: 'The WSS Protocol URI to connect to'
